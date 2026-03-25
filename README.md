@@ -52,7 +52,6 @@ npm run dev -w client
 ```
 
 Open http://localhost:3000
-
 ## API overview (REST)
 
 | Method | Path | Purpose |

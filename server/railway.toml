@@ -1,0 +1,10 @@
+# Railway: set this service Root Directory to `server`, then deploy.
+# Nixpacks runs npm install + npm run build by default; start uses package.json "start".
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/health"
+healthcheckTimeout = 30

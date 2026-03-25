@@ -1,0 +1,10 @@
+# Railway: set this service Root Directory to `client`, then deploy.
+# Set NEXT_PUBLIC_API_URL to your API service public URL before build (Variables tab).
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/"
+healthcheckTimeout = 60
