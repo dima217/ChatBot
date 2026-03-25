@@ -70,20 +70,3 @@ Open http://localhost:3000
 | `POST` | `/api/chats/:chatId/messages` | Send message; SSE stream by default |
 | `GET` | `/api/chats/:chatId/documents` | List documents |
 | `POST` | `/api/chats/:chatId/documents` | Multipart `file` upload |
-
-Streaming uses **Server-Sent Events** (`text/event-stream`): events `user_message`, `token`, `done`, `error`.
-
-Socket.io connects to the API origin with `auth: { token }` or `auth: { anonSessionId }` (anonymous id is returned in `GET /api/chats` for clients that cannot read the httpOnly cookie in JS).
-
-## Auth notes
-
-Registration uses the Supabase **Admin** API with `email_confirm: true` and then `signInWithPassword` on the server. If your project disallows that flow, create users in the Supabase dashboard and use `/api/auth/login` only.
-
-## Deploy
-
-- **Client**: Vercel (set `NEXT_PUBLIC_API_URL` to your API URL).
-- **Server**: Railway/Render/Fly — run `npm run build -w server && npm run start -w server`, set env vars, allow CORS `CLIENT_ORIGIN` to your frontend origin.
-
-## Video / submission
-
-Record a short walkthrough: anonymous flow → sign in → new chat → stream → document + image → second tab list sync.
