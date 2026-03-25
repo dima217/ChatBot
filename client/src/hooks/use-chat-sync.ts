@@ -4,8 +4,9 @@ import * as React from "react";
 import { io, type Socket } from "socket.io-client";
 import { chatApi } from "@/store/chatApi";
 import { useAppDispatch } from "@/store/index";
+import { getPublicApiBase } from "@/lib/publicEnv";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const API_BASE = getPublicApiBase();
 
 export function useChatSync(
   token: string | null,

@@ -1,4 +1,6 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+import { getPublicApiBase } from "@/lib/publicEnv";
+
+const API_BASE = getPublicApiBase();
 
 export type LlmProvider = "openai" | "gemini";
 

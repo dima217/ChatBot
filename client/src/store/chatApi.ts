@@ -12,8 +12,9 @@ import type {
   ChatListResponse,
   Message,
 } from "@/lib/api";
+import { getPublicApiBase } from "@/lib/publicEnv";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const API_BASE = getPublicApiBase();
 
 export type AuthResponse = {
   access_token: string;
