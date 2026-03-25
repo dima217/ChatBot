@@ -5,6 +5,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "npm start"
+# Monorepo root: workspace start for Next.js.
+startCommand = "npm run start:client"
 healthcheckPath = "/"
 healthcheckTimeout = 60

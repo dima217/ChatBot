@@ -1,0 +1,8 @@
+# Railway/Nixpacks: Tailwind v4 @tailwindcss/oxide requires Node >= 20; default Nixpacks used 18.
+# `npm install` avoids npm/ci skipping optional native bindings for @tailwindcss/oxide on Linux.
+
+[variables]
+NIXPACKS_NODE_VERSION = "20"
+
+[phases.install]
+cmds = ["npm install --no-audit --no-fund"]

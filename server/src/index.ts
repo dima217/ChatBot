@@ -93,6 +93,6 @@ app.use((_req, _res, next) => {
 
 app.use(errorHandler);
 
-httpServer.listen(env.PORT, () => {
-  console.log(`API listening on http://localhost:${env.PORT}`);
+httpServer.listen(env.PORT, '0.0.0.0', () => {
+  console.log(`API listening on 0.0.0.0:${env.PORT}`);
 });

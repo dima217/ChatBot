@@ -52,6 +52,20 @@ npm run dev -w client
 ```
 
 Open http://localhost:3000
+
+## Railway (monorepo from repo root)
+
+Nixpacks: `npm run build --workspace=server|client`, но в корне **нет** скрипта `start` → дефолтный `npm start` падает → healthcheck «service unavailable».
+
+**Settings → Deploy → Custom Start Command** для каждого сервиса:
+
+| Сервис | Start Command |
+|--------|----------------|
+| API | `npm run start:server` |
+| Web | `npm run start:client` |
+
+Либо **Root Directory** = `server` или `client`: тогда сработает локальный `npm start`.
+
 ## API overview (REST)
 
 | Method | Path | Purpose |

@@ -5,6 +5,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "npm start"
+# Monorepo root: use workspace start (root package.json has no plain "npm start").
+startCommand = "npm run start:server"
 healthcheckPath = "/health"
 healthcheckTimeout = 30
