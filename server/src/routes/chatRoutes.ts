@@ -12,7 +12,12 @@ import {
   deleteChatAnonymous,
 } from '../services/chatService.js';
 import { listMessages } from '../services/messageService.js';
-import { ensureAnonCookieRow, getAnonUsage, ANON_COOKIE } from '../services/anonymousService.js';
+import {
+  ensureAnonCookieRow,
+  getAnonUsage,
+  ANON_COOKIE,
+  anonCookieOptions,
+} from '../services/anonymousService.js';
 import { env } from '../config/env.js';
 import { ApiError } from '../middleware/errorHandler.js';
 
@@ -37,12 +42,7 @@ router.get('/', async (req, res, next) => {
       getAnonUsage(req.anonSessionId),
     ]);
     const limit = env.ANON_FREE_USER_MESSAGES;
-    res.cookie(ANON_COOKIE, req.anonSessionId, {
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: 60 * 24 * 60 * 60 * 1000,
-      path: '/',
-    });
+    res.cookie(ANON_COOKIE, req.anonSessionId, anonCookieOptions());
     return res.json({
       chats,
       anonymousSessionId: req.anonSessionId,
@@ -71,12 +71,7 @@ router.post('/', async (req, res, next) => {
       anonymousSessionId: req.anonSessionId,
       title: body.title,
     });
-    res.cookie(ANON_COOKIE, req.anonSessionId, {
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: 60 * 24 * 60 * 60 * 1000,
-      path: '/',
-    });
+    res.cookie(ANON_COOKIE, req.anonSessionId, anonCookieOptions());
     req.app.get('io')?.to(`anon:${req.anonSessionId}`).emit('chats:invalidate');
     return res.status(201).json({ chat, anonymousSessionId: req.anonSessionId });
   } catch (e) {
@@ -92,12 +87,7 @@ router.get('/:chatId', async (req, res, next) => {
       : await getChat(chatId, { anonymousSessionId: req.anonSessionId! });
     const messages = await listMessages(chatId);
     if (!req.user && req.anonSessionId) {
-      res.cookie(ANON_COOKIE, req.anonSessionId, {
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 60 * 24 * 60 * 60 * 1000,
-        path: '/',
-      });
+      res.cookie(ANON_COOKIE, req.anonSessionId, anonCookieOptions());
     }
     return res.json({ chat, messages });
   } catch (e) {

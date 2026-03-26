@@ -1,8 +1,22 @@
 import { getSupabaseAdmin } from '../db/supabaseAdmin.js';
 import { env } from '../config/env.js';
 import { ApiError } from '../middleware/errorHandler.js';
+import type { CookieOptions } from 'express';
 
 export const ANON_COOKIE = 'anon_session_id';
+export const ANON_COOKIE_MAX_AGE_MS = 60 * 24 * 60 * 60 * 1000;
+
+export function anonCookieOptions(): CookieOptions {
+  const isProd = env.NODE_ENV === 'production';
+  return {
+    httpOnly: true,
+    // Frontend and API are on different Railway domains in production, so cross-site cookie is required.
+    sameSite: isProd ? 'none' : 'lax',
+    secure: isProd,
+    maxAge: ANON_COOKIE_MAX_AGE_MS,
+    path: '/',
+  };
+}
 
 type Row = { session_id: string; user_messages_used: number };
 const USAGE_CACHE_TTL_MS = 15_000;

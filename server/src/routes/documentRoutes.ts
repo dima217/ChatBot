@@ -9,7 +9,11 @@ import {
   updateDocumentStoragePath,
 } from '../services/documentService.js';
 import { uploadBuffer } from '../services/storageService.js';
-import { ensureAnonCookieRow, ANON_COOKIE } from '../services/anonymousService.js';
+import {
+  ensureAnonCookieRow,
+  ANON_COOKIE,
+  anonCookieOptions,
+} from '../services/anonymousService.js';
 import { ApiError } from '../middleware/errorHandler.js';
 
 const upload = multer({
@@ -54,12 +58,7 @@ router.post('/', upload.single('file'), async (req, res, next) => {
     if (!req.user) {
       if (!req.anonSessionId) throw new ApiError(400, 'No session');
       await ensureAnonCookieRow(req.anonSessionId);
-      res.cookie(ANON_COOKIE, req.anonSessionId, {
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 60 * 24 * 60 * 60 * 1000,
-        path: '/',
-      });
+      res.cookie(ANON_COOKIE, req.anonSessionId, anonCookieOptions());
     }
 
     if (req.user) {

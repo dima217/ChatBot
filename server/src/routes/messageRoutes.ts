@@ -11,6 +11,7 @@ import {
   incrementAnonUsage,
   ensureAnonCookieRow,
   ANON_COOKIE,
+  anonCookieOptions,
 } from '../services/anonymousService.js';
 import { compileDocumentContext } from '../services/documentService.js';
 import { attachDocsToLastUserMessage } from '../services/chatContextService.js';
@@ -40,12 +41,7 @@ router.post('/', async (req, res, next) => {
       if (!req.anonSessionId) throw new ApiError(400, 'No session');
       await ensureAnonCookieRow(req.anonSessionId);
       anonUsedBeforeSend = await assertAnonCanSend(req.anonSessionId);
-      res.cookie(ANON_COOKIE, req.anonSessionId, {
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 60 * 24 * 60 * 60 * 1000,
-        path: '/',
-      });
+      res.cookie(ANON_COOKIE, req.anonSessionId, anonCookieOptions());
     }
 
     if (req.user) {

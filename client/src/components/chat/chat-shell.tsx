@@ -56,7 +56,6 @@ export function ChatShell() {
       const p = localStorage.getItem(PROVIDER_KEY) as LlmProvider | null;
       if (p === "openai" || p === "gemini") setProvider(p);
     } catch {
-      /* ignore */
     }
   }, []);
 
@@ -99,7 +98,6 @@ export function ChatShell() {
     anonymousUsage.remaining <= 0;
 
   function handleLogout() {
-    // Clear auth + RTK Query cache so UI immediately re-enters guest mode.
     dispatch(logout());
     dispatch(chatApi.util.resetApiState());
     setSelectedId(null);
@@ -115,7 +113,6 @@ export function ChatShell() {
       setSelectedId(r.chat.id);
       void chatsQuery.refetch();
     } catch {
-      /* toast */
     }
   }
 
@@ -125,7 +122,6 @@ export function ChatShell() {
       if (selectedId === id) setSelectedId(null);
       void detail.refetch();
     } catch {
-      /* ignore */
     }
   }
 

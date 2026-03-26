@@ -169,7 +169,7 @@ export const ChatComposer = React.forwardRef<ChatComposerHandle, Props>(
           )}
 
           {hasImages && (
-            <div className="scrollbar-none flex max-w-full items-center gap-2.5 overflow-x-auto overflow-y-hidden pb-0.5">
+            <div className="scrollbar-none flex max-w-full items-center gap-2.5 overflow-x-auto overflow-y-hidden pb-0.5 pt-2">
               {images.map((img) => (
                 <div key={img.id} className="relative shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
