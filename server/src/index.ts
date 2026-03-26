@@ -8,6 +8,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { env } from './config/env.js';
 import { errorHandler, ApiError } from './middleware/errorHandler.js';
 import { getSupabaseAdmin } from './db/supabaseAdmin.js';
+import { getCachedAuthUser, setCachedAuthUser } from './lib/authUserCache.js';
 import authRoutes from './routes/authRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
@@ -64,12 +65,17 @@ io.use(async (socket, next) => {
     const token = socket.handshake.auth?.token as string | undefined;
     const anonId = socket.handshake.auth?.anonSessionId as string | undefined;
     if (token) {
-      const { data, error } = await getSupabaseAdmin().auth.getUser(token);
-      if (error || !data.user) {
-        return next(new Error('Unauthorized'));
+      let user = getCachedAuthUser(token);
+      if (!user) {
+        const { data, error } = await getSupabaseAdmin().auth.getUser(token);
+        if (error || !data.user) {
+          return next(new Error('Unauthorized'));
+        }
+        setCachedAuthUser(token, data.user);
+        user = data.user;
       }
-      socket.data.userId = data.user.id;
-      socket.join(`user:${data.user.id}`);
+      socket.data.userId = user.id;
+      socket.join(`user:${user.id}`);
       return next();
     }
     if (anonId) {

@@ -20,7 +20,7 @@ import {
 } from "@/store/chatApi";
 import { logout } from "@/store/authSlice";
 import { sendMessageStream, type LlmProvider } from "@/lib/api";
-import { useAppDispatch } from "@/store/index";
+import { useAppDispatch, useAppSelector } from "@/store/index";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
@@ -28,10 +28,13 @@ const PROVIDER_KEY = "chatbot_llm_provider";
 
 export function ChatShell() {
   const dispatch = useAppDispatch();
+  const authHydrated = useAppSelector((s) => s.auth.hydrated);
   const { token, user, logout: signOut } = useAuth();
   const sessionKey = token ?? "__anon__";
 
-  const chatsQuery = useGetChatsQuery(sessionKey);
+  const chatsQuery = useGetChatsQuery(sessionKey, {
+    skip: !authHydrated,
+  });
   const [createChatMut] = useCreateChatMutation();
   const [deleteChatMut] = useDeleteChatMutation();
 

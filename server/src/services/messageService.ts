@@ -48,8 +48,16 @@ export async function buildContextFromHistory(
   chatId: string,
   maxMessages = 30
 ): Promise<{ role: 'user' | 'assistant' | 'system'; content: string; imageUrls: string[] }[]> {
-  const rows = await listMessages(chatId);
-  return rows.slice(-maxMessages).map((r) => ({
+  const db = getSupabaseAdmin();
+  const { data, error } = await db
+    .from('messages')
+    .select('role,content,image_urls,created_at')
+    .eq('chat_id', chatId)
+    .order('created_at', { ascending: false })
+    .limit(maxMessages);
+  if (error) throw error;
+  const rows = ((data ?? []) as Pick<MessageRow, 'role' | 'content' | 'image_urls'>[]).reverse();
+  return rows.map((r) => ({
     role: r.role,
     content: r.content,
     imageUrls: r.image_urls ?? [],

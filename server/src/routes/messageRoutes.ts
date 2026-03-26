@@ -34,11 +34,12 @@ router.post('/', async (req, res, next) => {
     const chatId = String((req.params as { chatId: string }).chatId);
     const body = bodySchema.parse(req.body);
     const wantStream = body.stream !== false;
+    let anonUsedBeforeSend: number | undefined;
 
     if (!req.user) {
       if (!req.anonSessionId) throw new ApiError(400, 'No session');
       await ensureAnonCookieRow(req.anonSessionId);
-      await assertAnonCanSend(req.anonSessionId);
+      anonUsedBeforeSend = await assertAnonCanSend(req.anonSessionId);
       res.cookie(ANON_COOKIE, req.anonSessionId, {
         httpOnly: true,
         sameSite: 'lax',
@@ -129,7 +130,7 @@ router.post('/', async (req, res, next) => {
       });
       await touchChat(chatId);
       if (!req.user && req.anonSessionId) {
-        await incrementAnonUsage(req.anonSessionId);
+        await incrementAnonUsage(req.anonSessionId, anonUsedBeforeSend);
       }
       if (req.user) {
         req.app.get('io')?.to(`user:${req.user.id}`).emit('chats:invalidate');
@@ -152,7 +153,7 @@ router.post('/', async (req, res, next) => {
     });
     await touchChat(chatId);
     if (!req.user && req.anonSessionId) {
-      await incrementAnonUsage(req.anonSessionId);
+      await incrementAnonUsage(req.anonSessionId, anonUsedBeforeSend);
     }
     return res.status(201).json({ userMessage: userMsg, assistantMessage: assistantMsg });
   } catch (e) {

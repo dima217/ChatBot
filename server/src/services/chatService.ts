@@ -27,27 +27,68 @@ export type ChatRow = {
   updated_at: string;
 };
 
+const CHAT_LIST_COLUMNS =
+  'id,user_id,title,anonymous_session_id,created_at,updated_at';
+const CHAT_LIST_CACHE_TTL_MS = 20_000;
+
+const userListCache = new Map<string, { expiresAt: number; data: ChatRow[] }>();
+const anonListCache = new Map<string, { expiresAt: number; data: ChatRow[] }>();
+
+function getListCache(
+  map: Map<string, { expiresAt: number; data: ChatRow[] }>,
+  key: string
+): ChatRow[] | null {
+  const row = map.get(key);
+  if (!row) return null;
+  if (row.expiresAt <= Date.now()) {
+    map.delete(key);
+    return null;
+  }
+  return row.data;
+}
+
+function setListCache(
+  map: Map<string, { expiresAt: number; data: ChatRow[] }>,
+  key: string,
+  data: ChatRow[]
+): void {
+  map.set(key, { expiresAt: Date.now() + CHAT_LIST_CACHE_TTL_MS, data });
+}
+
+function clearListCaches(): void {
+  userListCache.clear();
+  anonListCache.clear();
+}
+
 export async function listChats(userId: string): Promise<ChatRow[]> {
+  const cached = getListCache(userListCache, userId);
+  if (cached) return cached;
   const db = getSupabaseAdmin();
   const { data, error } = await db
     .from('chats')
-    .select('*')
+    .select(CHAT_LIST_COLUMNS)
     .eq('user_id', userId)
     .order('updated_at', { ascending: false });
   if (error) throw error;
-  return data as ChatRow[];
+  const rows = data as ChatRow[];
+  setListCache(userListCache, userId, rows);
+  return rows;
 }
 
 export async function listChatsAnonymous(sessionId: string): Promise<ChatRow[]> {
+  const cached = getListCache(anonListCache, sessionId);
+  if (cached) return cached;
   const db = getSupabaseAdmin();
   const { data, error } = await db
     .from('chats')
-    .select('*')
+    .select(CHAT_LIST_COLUMNS)
     .eq('anonymous_session_id', sessionId)
     .is('user_id', null)
     .order('updated_at', { ascending: false });
   if (error) throw error;
-  return data as ChatRow[];
+  const rows = data as ChatRow[];
+  setListCache(anonListCache, sessionId, rows);
+  return rows;
 }
 
 export async function createChat(opts: {
@@ -64,6 +105,7 @@ export async function createChat(opts: {
   };
   const { data, error } = await db.from('chats').insert(row).select('*').single();
   if (error) throw error;
+  clearListCaches();
   return data as ChatRow;
 }
 
@@ -101,6 +143,7 @@ export async function updateChatTitle(
     .select('*')
     .single();
   if (error) throw error;
+  clearListCaches();
   return data as ChatRow;
 }
 
@@ -109,6 +152,7 @@ export async function deleteChat(id: string, userId: string): Promise<void> {
   const db = getSupabaseAdmin();
   const { error } = await db.from('chats').delete().eq('id', id);
   if (error) throw error;
+  clearListCaches();
 }
 
 export async function deleteChatAnonymous(id: string, sessionId: string): Promise<void> {
@@ -116,11 +160,13 @@ export async function deleteChatAnonymous(id: string, sessionId: string): Promis
   const db = getSupabaseAdmin();
   const { error } = await db.from('chats').delete().eq('id', id);
   if (error) throw error;
+  clearListCaches();
 }
 
 export async function touchChat(id: string): Promise<void> {
   const db = getSupabaseAdmin();
   await db.from('chats').update({ updated_at: new Date().toISOString() }).eq('id', id);
+  clearListCaches();
 }
 
 /** If the chat still has the placeholder title, set it from the first user message. */
@@ -140,5 +186,6 @@ export async function updateChatTitleIfPlaceholder(
     .update({ title: nextTitle, updated_at: new Date().toISOString() })
     .eq('id', chatId);
   if (upErr) throw upErr;
+  clearListCaches();
   return true;
 }

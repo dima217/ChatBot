@@ -44,7 +44,9 @@ export function AuthBootstrap({ children }: { children: React.ReactNode }) {
       } catch {
         dispatch(logout());
       }
+      return;
     }
+    dispatch(hydrateFromStorage(null));
   }, [dispatch]);
 
   return <>{children}</>;

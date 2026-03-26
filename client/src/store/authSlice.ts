@@ -10,12 +10,14 @@ export type AuthState = {
   token: string | null;
   refreshToken: string | null;
   user: AuthUser | null;
+  hydrated: boolean;
 };
 
 const initialState: AuthState = {
   token: null,
   refreshToken: null,
   user: null,
+  hydrated: false,
 };
 
 export type SessionPayload = {
@@ -46,12 +48,14 @@ export const authSlice = createSlice({
       state.token = action.payload.access_token;
       state.refreshToken = action.payload.refresh_token;
       state.user = action.payload.user;
+      state.hydrated = true;
       persistSession(action.payload);
     },
     logout: (state) => {
       state.token = null;
       state.refreshToken = null;
       state.user = null;
+      state.hydrated = true;
       clearPersistedSession();
     },
     hydrateFromStorage: (
@@ -63,10 +67,12 @@ export const authSlice = createSlice({
       } | null>
     ) => {
       const p = action.payload;
-      if (!p) return;
-      state.token = p.token;
-      state.refreshToken = p.refreshToken;
-      state.user = p.user;
+      if (p) {
+        state.token = p.token;
+        state.refreshToken = p.refreshToken;
+        state.user = p.user;
+      }
+      state.hydrated = true;
     },
   },
 });

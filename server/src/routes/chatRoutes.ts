@@ -32,8 +32,10 @@ router.get('/', async (req, res, next) => {
     }
     if (!req.anonSessionId) throw new ApiError(400, 'No session');
     await ensureAnonCookieRow(req.anonSessionId);
-    const chats = await listChatsAnonymous(req.anonSessionId);
-    const used = await getAnonUsage(req.anonSessionId);
+    const [chats, used] = await Promise.all([
+      listChatsAnonymous(req.anonSessionId),
+      getAnonUsage(req.anonSessionId),
+    ]);
     const limit = env.ANON_FREE_USER_MESSAGES;
     res.cookie(ANON_COOKIE, req.anonSessionId, {
       httpOnly: true,
