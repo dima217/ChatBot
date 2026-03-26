@@ -17,6 +17,7 @@ import { useAppDispatch, useAppSelector } from "@/store/index";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useChatSync } from "@/hooks/use-chat-sync";
 import type { ChatComposerHandle } from "../components/chat/chat-composer";
+import { setAnonSessionId } from "@/lib/anon-session";
 
 const PROVIDER_KEY = "chatbot_llm_provider";
 
@@ -60,6 +61,9 @@ export function useChatShellState() {
   }, [mdUp]);
 
   const anonSessionId = chatsQuery.data?.anonymousSessionId ?? null;
+  React.useEffect(() => {
+    if (anonSessionId) setAnonSessionId(anonSessionId);
+  }, [anonSessionId]);
   useChatSync(token, user ? null : anonSessionId);
 
   const detail = useGetChatQuery(

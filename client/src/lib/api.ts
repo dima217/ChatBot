@@ -1,4 +1,5 @@
 import { getPublicApiBase } from "@/lib/publicEnv";
+import { ensureAnonSessionId } from "@/lib/anon-session";
 
 const API_BASE = getPublicApiBase();
 
@@ -33,6 +34,11 @@ function authHeaders(token: string | null): HeadersInit {
   const h: HeadersInit = { "Content-Type": "application/json" };
   if (token) {
     (h as Record<string, string>)["Authorization"] = `Bearer ${token}`;
+  } else {
+    const sid = ensureAnonSessionId();
+    if (sid) {
+      (h as Record<string, string>)["x-anon-session-id"] = sid;
+    }
   }
   return h;
 }

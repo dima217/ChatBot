@@ -13,6 +13,7 @@ import type {
   Message,
 } from "@/lib/api";
 import { getPublicApiBase } from "@/lib/publicEnv";
+import { ensureAnonSessionId } from "@/lib/anon-session";
 
 const API_BASE = getPublicApiBase();
 
@@ -29,7 +30,12 @@ const rawBaseQuery = fetchBaseQuery({
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootSlice).auth.token;
-    if (token) headers.set("Authorization", `Bearer ${token}`);
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    } else {
+      const anon = ensureAnonSessionId();
+      if (anon) headers.set("x-anon-session-id", anon);
+    }
     return headers;
   },
 });

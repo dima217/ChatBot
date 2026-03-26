@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { getSupabaseAdmin } from '../db/supabaseAdmin.js';
 import { ApiError } from './errorHandler.js';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import { ANON_COOKIE } from '../services/anonymousService.js';
 import { getCachedAuthUser, setCachedAuthUser } from '../lib/authUserCache.js';
 
@@ -12,7 +12,10 @@ export async function optionalAuth(req: Request, _res: Response, next: NextFunct
   const token = header?.startsWith('Bearer ') ? header.slice(7) : null;
   if (!token) {
     req.user = null;
-    let sid = req.cookies?.[ANON_COOKIE] as string | undefined;
+    const headerSidRaw = req.headers['x-anon-session-id'];
+    const headerSid = Array.isArray(headerSidRaw) ? headerSidRaw[0] : headerSidRaw;
+    const headerSidValid = headerSid && uuidValidate(headerSid) ? headerSid : undefined;
+    let sid = (req.cookies?.[ANON_COOKIE] as string | undefined) ?? headerSidValid;
     if (!sid) {
       sid = uuidv4();
     }
