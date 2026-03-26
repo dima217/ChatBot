@@ -29,7 +29,7 @@ const PROVIDER_KEY = "chatbot_llm_provider";
 export function ChatShell() {
   const dispatch = useAppDispatch();
   const authHydrated = useAppSelector((s) => s.auth.hydrated);
-  const { token, user, logout: signOut } = useAuth();
+  const { token, user } = useAuth();
   const sessionKey = token ?? "__anon__";
 
   const chatsQuery = useGetChatsQuery(sessionKey, {
@@ -98,6 +98,17 @@ export function ChatShell() {
     anonymousUsage !== undefined &&
     anonymousUsage.remaining <= 0;
 
+  function handleLogout() {
+    // Clear auth + RTK Query cache so UI immediately re-enters guest mode.
+    dispatch(logout());
+    dispatch(chatApi.util.resetApiState());
+    setSelectedId(null);
+    setMobileSidebarOpen(false);
+    setStreaming(false);
+    setStreamingText("");
+    setSendError(null);
+  }
+
   async function handleNewChat() {
     try {
       const r = await createChatMut(undefined).unwrap();
@@ -155,7 +166,7 @@ export function ChatShell() {
           setStreamingText("");
         },
         onUnauthorized: () => {
-          dispatch(logout());
+          handleLogout();
         },
       }
     );
@@ -201,7 +212,7 @@ export function ChatShell() {
                 variant="outline"
                 size="sm"
                 className="h-8 gap-1 rounded-lg border-zinc-200 px-2 text-xs sm:gap-1.5 sm:px-3 dark:border-zinc-700"
-                onClick={signOut}
+                onClick={handleLogout}
               >
                 <LogOut className="size-3.5 shrink-0" />
                 <span className="hidden sm:inline">Sign out</span>
