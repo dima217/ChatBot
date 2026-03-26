@@ -39,7 +39,7 @@ export function ChatSidebar({
       className={cn(
         "flex h-full min-h-0 shrink-0 flex-col border-r border-zinc-200 bg-white shadow-[4px_0_24px_-8px_rgba(0,0,0,0.12)] dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-none md:shadow-none",
         "box-border transition-[width] duration-200 ease-out",
-        collapsed ? "w-[4.25rem]" : "w-[18rem] sm:w-[21rem]"
+        collapsed ? "w-[4.0rem]" : "w-[16rem] sm:w-[21rem]"
       )}
     >
       <div
