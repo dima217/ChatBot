@@ -129,7 +129,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle>{mode === "login" ? "Sign in" : "Create account"}</DialogTitle>
           <DialogDescription>

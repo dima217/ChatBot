@@ -18,6 +18,8 @@ type Props = {
   collapsed: boolean;
   onToggleCollapse: () => void;
   anonymousBanner?: { remaining: number; limit: number } | null;
+  /** After choosing a chat / new chat (e.g. close mobile drawer). */
+  onAfterNavigate?: () => void;
 };
 
 export function ChatSidebar({
@@ -30,13 +32,14 @@ export function ChatSidebar({
   collapsed,
   onToggleCollapse,
   anonymousBanner,
+  onAfterNavigate,
 }: Props) {
   return (
     <aside
       className={cn(
-        "flex h-full min-h-0 shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950",
+        "flex h-full min-h-0 shrink-0 flex-col border-r border-zinc-200 bg-white shadow-[4px_0_24px_-8px_rgba(0,0,0,0.12)] dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-none md:shadow-none",
         "box-border transition-[width] duration-200 ease-out",
-        collapsed ? "w-[4.25rem]" : "w-[min(100%,21rem)]"
+        collapsed ? "w-[4.25rem]" : "w-[18rem] sm:w-[21rem]"
       )}
     >
       <div
@@ -48,7 +51,7 @@ export function ChatSidebar({
         <Button
           variant="ghost"
           size="icon"
-          className="size-8 shrink-0 rounded-lg text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+          className="hidden size-8 shrink-0 rounded-lg text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-800 md:flex dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
           onClick={onToggleCollapse}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
@@ -61,7 +64,10 @@ export function ChatSidebar({
         {!collapsed && (
           <Button
             className="h-8 min-w-0 flex-1 gap-1.5 rounded-lg bg-violet-600 px-3 text-xs font-semibold text-white shadow-sm hover:bg-violet-500 dark:bg-violet-600 dark:hover:bg-violet-500"
-            onClick={onNew}
+            onClick={() => {
+              onNew();
+              onAfterNavigate?.();
+            }}
           >
             <Plus className="size-3.5 shrink-0" />
             New Chat
@@ -71,7 +77,10 @@ export function ChatSidebar({
           <Button
             size="icon"
             className="size-8 shrink-0 rounded-lg bg-violet-600 text-white shadow-sm hover:bg-violet-500 dark:bg-violet-600 dark:hover:bg-violet-500"
-            onClick={onNew}
+            onClick={() => {
+              onNew();
+              onAfterNavigate?.();
+            }}
             aria-label="New Chat"
           >
             <Plus className="size-3.5" />
@@ -87,7 +96,6 @@ export function ChatSidebar({
       )}
 
       <ScrollArea className="min-h-0 min-w-0 flex-1">
-        {/* pr-3.5: keep row controls clear of Radix scrollbar overlay */}
         <div className={cn("min-w-0 py-3", collapsed ? "px-2.5" : "px-3 pr-3.5")}>
           {loading && (
             <div className="space-y-2 px-0.5">
@@ -113,10 +121,10 @@ export function ChatSidebar({
             {chats?.map((c) => {
               const selected = selectedId === c.id;
               return (
-                <li key={c.id} className="min-w-0">
+                <li key={c.id} className="min-w-0 max-w-full">
                   <div
                     className={cn(
-                      "group flex min-w-0 items-center gap-1 rounded-lg border border-transparent transition-colors",
+                      "group flex min-w-0 max-w-full items-center gap-1 rounded-lg border border-transparent transition-colors",
                       collapsed ? "justify-center px-1 py-1" : "pl-2 pr-1",
                       selected
                         ? "border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
@@ -126,12 +134,15 @@ export function ChatSidebar({
                     <button
                       type="button"
                       className={cn(
-                        "flex min-w-0 items-center gap-2 py-1.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-violet-500/40",
+                        "flex min-w-0 max-w-full items-center gap-2 py-1.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-violet-500/40",
                         collapsed
                           ? "justify-center px-0"
                           : "min-h-[2.5rem] flex-1 overflow-hidden pl-0 pr-0"
                       )}
-                      onClick={() => onSelect(c.id)}
+                      onClick={() => {
+                        onSelect(c.id);
+                        onAfterNavigate?.();
+                      }}
                       title={c.title}
                     >
                       <span
@@ -145,17 +156,16 @@ export function ChatSidebar({
                         <MessageSquare className="size-3.5 opacity-95" />
                       </span>
                       {!collapsed && (
-                        <span
-                          className={cn(
-                            "min-w-0 flex-1 truncate text-[13px] font-medium leading-tight",
-                            selected
-                              ? "text-zinc-900 dark:text-zinc-50"
-                              : "text-zinc-700 dark:text-zinc-200"
-                          )}
-                        >
-                          {c.title}
-                        </span>
+                      <span
+                      className={cn(
+                        "min-w-0 max-w-full flex-1 text-[13px] font-medium leading-tight",
+                        "line-clamp-1 break-words",
+                        selected ? "text-zinc-900 dark:text-zinc-50" : "text-zinc-700 dark:text-zinc-200"
                       )}
+                    >
+                      {c.title}
+                    </span>
+                    )}
                     </button>
                     {!collapsed && (
                       <Button
